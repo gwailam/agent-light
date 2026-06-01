@@ -18,7 +18,7 @@ Turn an Arduino traffic-light module into a real-time status indicator for Claud
 
 ### Hardware
 
-![Hardware shopping list](images/list.png)
+![Hardware shopping list](images/list.jpg)
 
 ## Quick Start
 
