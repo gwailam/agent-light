@@ -16,6 +16,9 @@
     "service:uninstall": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/uninstall-windows-service.ps1",
     "service:status": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/status-windows-service.ps1",
     "manager:build": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-manager.ps1",
-    "manager": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start-manager.ps1"
+    "manager": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start-manager.ps1",
+    "wizard:build": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-wizard.ps1",
+    "wizard": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start-wizard.ps1",
+    "package:full": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-full-package.ps1"
   }
 }

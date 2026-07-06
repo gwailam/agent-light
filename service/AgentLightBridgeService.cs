@@ -705,7 +705,6 @@ namespace AgentLightService
     internal sealed class ServiceConfig
     {
         public string WindowsServiceName;
-        public string NodePath;
         public string RepoRoot;
         public string Transport;
         public string Serial;
@@ -767,7 +766,6 @@ namespace AgentLightService
 
             var config = new ServiceConfig();
             config.WindowsServiceName = GetValue(values, "ServiceName", AgentLightBridgeService.DefaultServiceName);
-            config.NodePath = GetValue(values, "NodePath", FindNodePath());
             config.RepoRoot = Path.GetFullPath(GetValue(values, "RepoRoot", repoRoot));
             config.Transport = GetValue(values, "Transport", "serial");
             config.Serial = GetValue(values, "Serial", GetEnvironment("AGENT_LIGHT_SERIAL", "COM3"));
@@ -801,32 +799,6 @@ namespace AgentLightService
         {
             var value = Environment.GetEnvironmentVariable(key);
             return string.IsNullOrEmpty(value) ? fallback : value;
-        }
-
-        private static string FindNodePath()
-        {
-            var envNode = Environment.GetEnvironmentVariable("AGENT_LIGHT_NODE");
-            if (!string.IsNullOrEmpty(envNode))
-            {
-                return envNode;
-            }
-
-            var candidates = new[]
-            {
-                @"C:\Program Files\nodejs\node.exe",
-                @"C:\Program Files (x86)\nodejs\node.exe",
-                "node.exe"
-            };
-
-            foreach (var candidate in candidates)
-            {
-                if (candidate.Equals("node.exe", StringComparison.OrdinalIgnoreCase) || File.Exists(candidate))
-                {
-                    return candidate;
-                }
-            }
-
-            return "node.exe";
         }
     }
 }

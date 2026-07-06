@@ -1355,7 +1355,6 @@ namespace AgentLightManager
             return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
                 { "ServiceName", ServiceName },
-                { "NodePath", @"C:\Program Files\nodejs\node.exe" },
                 { "RepoRoot", repoRoot },
                 { "Transport", "serial" },
                 { "Serial", "COM4" },
@@ -1370,7 +1369,7 @@ namespace AgentLightManager
         private void WriteConfig(Dictionary<string, string> values)
         {
             Directory.CreateDirectory(Path.GetDirectoryName(configPath));
-            var order = new[] { "ServiceName", "NodePath", "RepoRoot", "Transport", "Serial", "Baud", "Listen", "DeviceHost", "DevicePort", "Initial" };
+            var order = new[] { "ServiceName", "RepoRoot", "Transport", "Serial", "Baud", "Listen", "DeviceHost", "DevicePort", "Initial" };
             var builder = new StringBuilder();
             foreach (var key in order)
             {

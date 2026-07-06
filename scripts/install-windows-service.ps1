@@ -8,8 +8,7 @@
   [int]$Listen = 8765,
   [string]$DeviceHost = "agent-light.local",
   [int]$DevicePort = 8766,
-  [string]$Initial = "claude:idle",
-  [string]$NodePath = ""
+  [string]$Initial = "claude:idle"
 )
 
 $ErrorActionPreference = "Stop"
@@ -33,18 +32,12 @@ $serviceDir = Join-Path -Path $repo -ChildPath "service"
 $serviceExe = Join-Path -Path $serviceDir -ChildPath "AgentLightBridgeService.exe"
 $configPath = Join-Path -Path $serviceDir -ChildPath "agent-light-service.ini"
 
-if (-not $NodePath) {
-  $nodeCommand = Get-Command -Name "node.exe" -ErrorAction Stop
-  $NodePath = $nodeCommand.Source
-}
-
 if (-not (Test-Path -LiteralPath $serviceExe)) {
   & (Join-Path -Path $PSScriptRoot -ChildPath "build-windows-service.ps1")
 }
 
 $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 $config = "ServiceName=$ServiceName
-NodePath=$NodePath
 RepoRoot=$repo
 Transport=$Transport
 Serial=$Serial
@@ -56,10 +49,10 @@ Initial=$Initial
 "
 [System.IO.File]::WriteAllText($configPath, $config, $utf8NoBom)
 
-Get-CimInstance -ClassName Win32_Process -Filter "name = 'node.exe'" |
+Get-CimInstance -ClassName Win32_Process -Filter "name = 'node.exe'" -ErrorAction SilentlyContinue |
   Where-Object { $_.CommandLine -match "serial-bridge\.mjs" } |
   ForEach-Object {
-    Write-Host "Stopping existing bridge process pid=$($_.ProcessId)"
+    Write-Host "Stopping existing legacy bridge process pid=$($_.ProcessId)"
     Stop-Process -Id $_.ProcessId -Force
   }
 

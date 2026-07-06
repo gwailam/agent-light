@@ -1,6 +1,5 @@
 ServiceName=AgentLightBridge
 # Copy to agent-light-service.ini or let scripts/install-windows-service.ps1 generate it.
-NodePath=C:\Program Files\nodejs\node.exe
 RepoRoot=D:\Users\Project\esp32\agent-light
 Transport=serial
 Serial=COM3

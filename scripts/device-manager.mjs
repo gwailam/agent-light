@@ -295,7 +295,6 @@ function readServiceConfig() {
 function updateServiceConfig(updates) {
   const config = {
     ServiceName: serviceName,
-    NodePath: 'C:\\Program Files\\nodejs\\node.exe',
     RepoRoot: repoRoot,
     Transport: 'serial',
     Serial: 'COM3',
@@ -308,7 +307,7 @@ function updateServiceConfig(updates) {
     ...updates,
   };
 
-  const order = ['ServiceName', 'NodePath', 'RepoRoot', 'Transport', 'Serial', 'Baud', 'Listen', 'DeviceHost', 'DevicePort', 'Initial'];
+  const order = ['ServiceName', 'RepoRoot', 'Transport', 'Serial', 'Baud', 'Listen', 'DeviceHost', 'DevicePort', 'Initial'];
   const text = `${order.map((key) => `${key}=${config[key]}`).join('\r\n')}\r\n`;
   fs.mkdirSync(path.dirname(serviceConfigPath), { recursive: true });
   fs.writeFileSync(serviceConfigPath, text, 'utf8');
