@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node /Users/wesley/workspace/learning/claude-light/hook-client.mjs thinking"
+            "command": "node D:/Users/Project/esp32/agent-light/hook-client.mjs claude:thinking"
           }
         ]
       }
@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node /Users/wesley/workspace/learning/claude-light/hook-client.mjs running"
+            "command": "node D:/Users/Project/esp32/agent-light/hook-client.mjs claude:running"
           }
         ]
       }
@@ -27,7 +27,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node /Users/wesley/workspace/learning/claude-light/hook-client.mjs thinking"
+            "command": "node D:/Users/Project/esp32/agent-light/hook-client.mjs claude:thinking"
           }
         ]
       }
@@ -37,7 +37,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node /Users/wesley/workspace/learning/claude-light/hook-client.mjs idle"
+            "command": "node D:/Users/Project/esp32/agent-light/hook-client.mjs claude:idle"
           }
         ]
       }

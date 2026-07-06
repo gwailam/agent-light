@@ -1,10 +1,21 @@
 {
-  "name": "claude-light",
+  "name": "agent-light",
   "private": true,
   "type": "module",
   "scripts": {
     "test": "node --test test/*.test.mjs",
     "bridge": "node serial-bridge.mjs",
-    "light": "node hook-client.mjs"
+    "light": "node hook-client.mjs",
+    "device": "node scripts/device-manager.mjs",
+    "device:status": "node scripts/device-manager.mjs status",
+    "device:scan": "node scripts/device-manager.mjs scan",
+    "firmware:compile": "..\\tools\\arduino-cli\\arduino-cli.exe --config-file ..\\arduino-cli.yaml compile --fqbn esp32:esp32:esp32:PartitionScheme=huge_app .\\firmware\\agent-light",
+    "firmware:upload": "..\\tools\\arduino-cli\\arduino-cli.exe --config-file ..\\arduino-cli.yaml upload -p COM3 --fqbn esp32:esp32:esp32:PartitionScheme=huge_app .\\firmware\\agent-light",
+    "service:build": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-windows-service.ps1",
+    "service:install": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/install-windows-service.ps1",
+    "service:uninstall": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/uninstall-windows-service.ps1",
+    "service:status": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/status-windows-service.ps1",
+    "manager:build": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-manager.ps1",
+    "manager": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start-manager.ps1"
   }
 }

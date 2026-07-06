@@ -1,0 +1,50 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node /path/to/agent-light/hook-client.mjs codex:thinking",
+            "commandWindows": "node D:\\Users\\Project\\esp32\\agent-light\\hook-client.mjs codex:thinking"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node /path/to/agent-light/hook-client.mjs codex:running",
+            "commandWindows": "node D:\\Users\\Project\\esp32\\agent-light\\hook-client.mjs codex:running"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node /path/to/agent-light/hook-client.mjs codex:thinking",
+            "commandWindows": "node D:\\Users\\Project\\esp32\\agent-light\\hook-client.mjs codex:thinking"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node /path/to/agent-light/hook-client.mjs codex:idle",
+            "commandWindows": "node D:\\Users\\Project\\esp32\\agent-light\\hook-client.mjs codex:idle"
+          }
+        ]
+      }
+    ]
+  }
+}

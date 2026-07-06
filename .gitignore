@@ -1,4 +1,12 @@
 node_modules/
 .env
 .DS_Store
-target/
+bridge.*.log
+service/*.exe
+service/*.pdb
+service/agent-light-service.ini
+service/logs/
+manager/*.exe
+manager/*.pdb
+manager/*.settings
+firmware/agent-light/secrets.h
