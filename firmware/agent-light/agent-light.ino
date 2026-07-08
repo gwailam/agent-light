@@ -70,6 +70,8 @@ unsigned long lastWiFiAttempt = 0;
 bool bluetoothStarted = false;
 bool commandServerStarted = false;
 bool mdnsStarted = false;
+bool wifiConnectInProgress = false;
+unsigned long wifiConnectStartedAt = 0;
 bool rebootPending = false;
 unsigned long rebootAt = 0;
 
@@ -143,6 +145,7 @@ void connectWiFi() {
   lastWiFiAttempt = millis();
   commandServerStarted = false;
   mdnsStarted = false;
+  wifiConnectInProgress = false;
 
   if (wifiSsid.length() == 0) {
     Serial.println("WiFi SSID is empty; USB serial and Bluetooth commands remain available.");
@@ -154,25 +157,17 @@ void connectWiFi() {
   WiFi.setTxPower(WIFI_POWER_19_5dBm);
   WiFi.setHostname(HOSTNAME);
   WiFi.begin(wifiSsid.c_str(), wifiPassword.c_str());
+  wifiConnectStartedAt = millis();
+  wifiConnectInProgress = true;
 
   Serial.print("Connecting to WiFi SSID: ");
   Serial.println(wifiSsid);
-
-  unsigned long startedAt = millis();
-  while (WiFi.status() != WL_CONNECTED && millis() - startedAt < WIFI_CONNECT_TIMEOUT_MS) {
-    delay(250);
-  }
-
-  if (WiFi.status() == WL_CONNECTED) {
-    startNetworkServices();
-  } else {
-    Serial.println("WiFi connect timeout; USB serial commands remain available.");
-  }
 }
 
 void maintainWiFi() {
   if (WiFi.status() == WL_CONNECTED) {
-    if (!commandServerStarted) {
+    wifiConnectInProgress = false;
+    if (!commandServerStarted || !mdnsStarted) {
       startNetworkServices();
     }
     return;
@@ -180,6 +175,16 @@ void maintainWiFi() {
 
   commandServerStarted = false;
   mdnsStarted = false;
+
+  if (wifiConnectInProgress) {
+    if (millis() - wifiConnectStartedAt >= WIFI_CONNECT_TIMEOUT_MS) {
+      wifiConnectInProgress = false;
+      lastWiFiAttempt = millis();
+      WiFi.disconnect();
+      Serial.println("WiFi connect timeout; USB serial and Bluetooth commands remain available.");
+    }
+    return;
+  }
 
   if (millis() - lastWiFiAttempt >= WIFI_RETRY_INTERVAL_MS) {
     connectWiFi();
@@ -402,6 +407,8 @@ String handleSystemCommand(String cmd) {
 }
 
 String wifiStatusLabel() {
+  if (wifiConnectInProgress) return "connecting";
+
   wl_status_t status = WiFi.status();
   if (status == WL_CONNECTED) return "connected";
   if (status == WL_NO_SSID_AVAIL) return "no-ssid";

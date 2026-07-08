@@ -95,7 +95,25 @@ npm run bridge -- --serial /dev/cu.usbmodem832101
 
 ### 2. 配置 Hooks
 
-Codex 使用 [`codex-hooks-snippet.json`](codex-hooks-snippet.json)，可合并到 `~/.codex/hooks.json` 或项目 `.codex/hooks.json` 中。首次启用后在 Codex 中用 `/hooks` 审查并信任 hooks。
+Codex 推荐在每台电脑上生成一次本机路径的 hooks：
+
+```powershell
+npm run codex:hooks:install
+```
+
+脚本会写入 `~/.codex/hooks.json`，并把命令指向当前仓库里的 `hook-client.mjs`。首次启用后在 Codex 中用 `/hooks` 审查并信任 hooks。
+
+也可以手动参考 [`codex-hooks-snippet.json`](codex-hooks-snippet.json)，合并到 `~/.codex/hooks.json` 或项目 `.codex/hooks.json` 中；手动合并时必须把 `C:\path\to\agent-light` 改为本机实际路径。
+
+如果在其它电脑上 Codex 已提示信任 hooks，但状态灯没有响应，先检查 `~/.codex/hooks.json` 里是否仍保留旧电脑的绝对路径，例如 `D:\Users\Project\esp32\agent-light\hook-client.mjs`。信任 hooks 只代表 Codex 允许执行命令，不会自动修正路径、安装 Node.js 或启动 `AgentLightBridge` 服务。
+
+进一步诊断可运行：
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\diagnose-codex-hooks.ps1
+```
+
+诊断脚本会检查 hooks JSON 结构、Node.js、`hook-client.mjs` 路径、本机桥接服务监听状态，并显示最近的 `service\logs\hook-client.log` 和桥接日志。Codex 触发 hooks 后也会在 `service\logs\hook-client.log` 留下记录；如果这个日志没有新增，说明 Codex 没有实际执行 hook。
 
 Claude Code 可继续使用 [`claude-settings-snippet.json`](claude-settings-snippet.json)，合并到 `~/.claude/settings.json` 中，并将代码片段中的路径修改为本仓库的实际位置。
 

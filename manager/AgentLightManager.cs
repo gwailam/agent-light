@@ -49,6 +49,7 @@ namespace AgentLightManager
 
         private ComboBox transportCombo;
         private ComboBox serialCombo;
+        private ComboBox firmwareSerialCombo;
         private TextBox hostText;
         private TextBox portText;
         private TextBlock serialFieldLabel;
@@ -121,7 +122,7 @@ namespace AgentLightManager
             var root = new Grid();
             root.Margin = new Thickness(14);
             root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(166) });
+            root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(198) });
             root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
             Content = root;
 
@@ -191,6 +192,7 @@ namespace AgentLightManager
             tabs.Items.Add(CreateTab("通讯方式", BuildTransportTab()));
             tabs.Items.Add(CreateTab("Wi-Fi 配网", BuildWifiTab()));
             tabs.Items.Add(CreateTab("状态灯", BuildLightTab()));
+            tabs.Items.Add(CreateTab("固件烧录", BuildFirmwareTab()));
             tabs.Items.Add(CreateTab("管理命令", BuildCommandTab()));
             return tabs;
         }
@@ -360,12 +362,53 @@ namespace AgentLightManager
             return grid;
         }
 
+        private UIElement BuildFirmwareTab()
+        {
+            var grid = CreateFormGrid(3);
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(88) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(390) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+
+            firmwareSerialCombo = new ComboBox();
+            AddField(grid, "烧录串口", firmwareSerialCombo, 0, 1);
+            var refreshButton = CreateButton("刷新串口", delegate { RefreshSerialPorts(); });
+            CenterSideButton(refreshButton);
+            grid.Children.Add(refreshButton);
+            Grid.SetRow(refreshButton, 0);
+            Grid.SetColumn(refreshButton, 2);
+
+            var compileButton = CreateButton("生成固件包(开发)", delegate { FlashFirmware(true); });
+            CenterSideButton(compileButton);
+            grid.Children.Add(compileButton);
+            Grid.SetRow(compileButton, 1);
+            Grid.SetColumn(compileButton, 1);
+
+            var flashButton = CreateButton("烧录固件", delegate { FlashFirmware(false); });
+            CenterSideButton(flashButton);
+            grid.Children.Add(flashButton);
+            Grid.SetRow(flashButton, 1);
+            Grid.SetColumn(flashButton, 2);
+
+            var hint = new TextBlock
+            {
+                Text = "烧录使用 firmware-release 中的预编译固件，不依赖 Arduino ESP32 core。生成固件包是开发功能，需要本机 Arduino 编译环境。",
+                TextWrapping = TextWrapping.Wrap,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            grid.Children.Add(hint);
+            Grid.SetRow(hint, 2);
+            Grid.SetColumn(hint, 1);
+            Grid.SetColumnSpan(hint, 2);
+
+            return grid;
+        }
+
         private UIElement BuildCommandTab()
         {
             var grid = new Grid { Margin = new Thickness(12, 6, 12, 6) };
             grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(36) });
-            grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(36) });
-            grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(36) });
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(112) });
 
@@ -389,17 +432,21 @@ namespace AgentLightManager
             Grid.SetColumn(send, 1);
 
             var presets = new WrapPanel();
-            presets.Margin = new Thickness(0);
+            presets.Margin = new Thickness(0, 0, 0, 4);
             presets.Children.Add(CreateButton("sys:info", delegate { UsePreset("sys:info"); }));
             presets.Children.Add(CreateButton("sys:ping", delegate { UsePreset("sys:ping"); }));
             presets.Children.Add(CreateButton("wifi:status", delegate { UsePreset("wifi:status"); }));
             presets.Children.Add(CreateButton("reboot", delegate { UsePreset("reboot"); }));
+            presets.Children.Add(CreateButton("安装/修复 Codex Hooks", delegate { InstallOrRepairCodexHooks(); }));
+            presets.Children.Add(CreateButton("预览 Codex Hooks", delegate { PreviewCodexHooks(); }));
+            presets.Children.Add(CreateButton("测试 Codex 灯", delegate { SendManagerCommand("codex:thinking", false); }));
+            presets.Children.Add(CreateButton("诊断 Codex Hooks", delegate { DiagnoseCodexHooks(); }));
             grid.Children.Add(presets);
             Grid.SetRow(presets, 1);
             Grid.SetColumnSpan(presets, 2);
 
             var serviceActions = new WrapPanel();
-            serviceActions.Margin = new Thickness(0);
+            serviceActions.Margin = new Thickness(0, 0, 0, 4);
             serviceActions.Children.Add(CreateButton("安装/修复服务", delegate { InstallOrRepairService(); }));
             serviceActions.Children.Add(CreateButton("卸载服务", delegate { ConfirmAndUninstallService(); }));
             serviceActions.Children.Add(CreateButton("启动服务", delegate { RunBackground("启动服务", delegate { StartService(); return "服务启动完成"; }); }));
@@ -551,6 +598,26 @@ namespace AgentLightManager
             {
                 serialCombo.SelectedIndex = ports.Count == 1 ? 0 : -1;
             }
+
+            if (firmwareSerialCombo != null)
+            {
+                var firmwareSelected = GetSelectedFirmwareSerialPortName();
+                if (string.IsNullOrEmpty(firmwareSelected))
+                {
+                    firmwareSelected = selectedPort;
+                }
+
+                firmwareSerialCombo.Items.Clear();
+                foreach (var port in ports)
+                {
+                    firmwareSerialCombo.Items.Add(port);
+                }
+
+                if (!SelectFirmwareSerialPort(firmwareSelected))
+                {
+                    firmwareSerialCombo.SelectedIndex = ports.Count == 1 ? 0 : -1;
+                }
+            }
         }
 
         private List<SerialPortOption> GetUsableSerialPortOptions()
@@ -639,6 +706,43 @@ namespace AgentLightManager
             return string.Empty;
         }
 
+        private bool SelectFirmwareSerialPort(string portName)
+        {
+            if (firmwareSerialCombo == null)
+            {
+                return false;
+            }
+
+            foreach (var item in firmwareSerialCombo.Items)
+            {
+                var option = item as SerialPortOption;
+                if (option != null && string.Equals(option.PortName, portName, StringComparison.OrdinalIgnoreCase))
+                {
+                    firmwareSerialCombo.SelectedItem = option;
+                    return true;
+                }
+            }
+
+            firmwareSerialCombo.SelectedIndex = -1;
+            return false;
+        }
+
+        private string GetSelectedFirmwareSerialPortName()
+        {
+            if (firmwareSerialCombo == null)
+            {
+                return string.Empty;
+            }
+
+            var option = firmwareSerialCombo.SelectedItem as SerialPortOption;
+            if (option != null)
+            {
+                return option.PortName;
+            }
+
+            return string.Empty;
+        }
+
         private string GetSerialPortKind(string name, string description, string pnpDeviceId)
         {
             var text = ((name ?? string.Empty) + " " + (description ?? string.Empty) + " " + (pnpDeviceId ?? string.Empty)).ToUpperInvariant();
@@ -718,6 +822,49 @@ namespace AgentLightManager
                 WriteConfig(config);
                 RestartService();
                 return "通讯方式已应用并重启服务";
+            }, delegate(string text)
+            {
+                AppendOutput(text);
+                RefreshAll();
+            }, false);
+        }
+
+        private void FlashFirmware(bool compileOnly)
+        {
+            var serial = GetSelectedFirmwareSerialPortName().Trim().ToUpperInvariant();
+            if (serial.Length == 0)
+            {
+                serial = GetSelectedSerialPortName().Trim().ToUpperInvariant();
+            }
+
+            if (!compileOnly && serial.Length == 0)
+            {
+                ShowError("请先选择 ESP32 对应的烧录串口。");
+                return;
+            }
+
+            if (serial.Length > 0 && !serial.StartsWith("COM", StringComparison.OrdinalIgnoreCase))
+            {
+                ShowError("串口格式应类似 COM4。");
+                return;
+            }
+
+            var action = compileOnly ? "生成固件包" : "烧录固件";
+            RunBackground(action, delegate
+            {
+                var arguments = new List<string>();
+                if (serial.Length > 0)
+                {
+                    arguments.Add("-Port");
+                    arguments.Add(serial);
+                }
+                if (compileOnly)
+                {
+                    arguments.Add("-CompileOnly");
+                }
+
+                RunPowerShellScript("flash-firmware.ps1", arguments);
+                return compileOnly ? "固件包生成完成" : "固件烧录完成";
             }, delegate(string text)
             {
                 AppendOutput(text);
@@ -832,6 +979,33 @@ namespace AgentLightManager
                 AppendOutput(text);
                 RefreshAll();
             }, false);
+        }
+
+        private void InstallOrRepairCodexHooks()
+        {
+            RunBackground("安装/修复 Codex Hooks", delegate
+            {
+                RunPowerShellScript("install-codex-hooks.ps1", new List<string>());
+                return "Codex Hooks 安装/修复完成。请在 Codex 中打开 /hooks，信任更新后的 Agent Light hooks。";
+            }, AppendOutput, false);
+        }
+
+        private void PreviewCodexHooks()
+        {
+            RunBackground("预览 Codex Hooks", delegate
+            {
+                RunPowerShellScript("install-codex-hooks.ps1", new List<string> { "-DryRun" });
+                return "Codex Hooks 预览完成，未写入 hooks.json。";
+            }, AppendOutput, false);
+        }
+
+        private void DiagnoseCodexHooks()
+        {
+            RunBackground("诊断 Codex Hooks", delegate
+            {
+                RunPowerShellScript("diagnose-codex-hooks.ps1", new List<string>());
+                return "Codex Hooks 诊断完成。若测试灯正常但 Codex 无响应，请看 hook-client.log 是否在 Codex 对话时新增记录。";
+            }, AppendOutput, false);
         }
 
         private void RunPowerShellScript(string scriptName, List<string> arguments)

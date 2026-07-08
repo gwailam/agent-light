@@ -1,7 +1,9 @@
 node_modules/
+.arduino/
 .env
 .DS_Store
 bridge.*.log
+build/
 service/*.exe
 service/*.pdb
 service/agent-light-service.ini

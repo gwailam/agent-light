@@ -6,7 +6,7 @@
           {
             "type": "command",
             "command": "node /path/to/agent-light/hook-client.mjs codex:thinking",
-            "commandWindows": "node D:\\Users\\Project\\esp32\\agent-light\\hook-client.mjs codex:thinking"
+            "commandWindows": "node C:\\path\\to\\agent-light\\hook-client.mjs codex:thinking"
           }
         ]
       }
@@ -18,7 +18,7 @@
           {
             "type": "command",
             "command": "node /path/to/agent-light/hook-client.mjs codex:running",
-            "commandWindows": "node D:\\Users\\Project\\esp32\\agent-light\\hook-client.mjs codex:running"
+            "commandWindows": "node C:\\path\\to\\agent-light\\hook-client.mjs codex:running"
           }
         ]
       }
@@ -30,7 +30,7 @@
           {
             "type": "command",
             "command": "node /path/to/agent-light/hook-client.mjs codex:thinking",
-            "commandWindows": "node D:\\Users\\Project\\esp32\\agent-light\\hook-client.mjs codex:thinking"
+            "commandWindows": "node C:\\path\\to\\agent-light\\hook-client.mjs codex:thinking"
           }
         ]
       }
@@ -41,7 +41,7 @@
           {
             "type": "command",
             "command": "node /path/to/agent-light/hook-client.mjs codex:idle",
-            "commandWindows": "node D:\\Users\\Project\\esp32\\agent-light\\hook-client.mjs codex:idle"
+            "commandWindows": "node C:\\path\\to\\agent-light\\hook-client.mjs codex:idle"
           }
         ]
       }
